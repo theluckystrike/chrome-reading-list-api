@@ -1,31 +1,19 @@
-# chrome-reading-list-api
+# Chrome Reading List API
 
-[![npm version](https://img.shields.io/npm/v/chrome-reading-list-api)](https://npmjs.com/package/chrome-reading-list-api)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
-[![Chrome Web Extension](https://img.shields.io/badge/Chrome-Web%20Extension-orange.svg)](https://developer.chrome.com/docs/extensions/)
-[![CI Status](https://github.com/theluckystrike/chrome-reading-list-api/actions/workflows/ci.yml/badge.svg)](https://github.com/theluckystrike/chrome-reading-list-api/actions)
-[![Discord](https://img.shields.io/badge/Discord-Zovo-blueviolet.svg?logo=discord)](https://discord.gg/zovo)
-[![Website](https://img.shields.io/badge/Website-zovo.one-blue)](https://zovo.one)
-[![GitHub Stars](https://img.shields.io/github/stars/theluckystrike/chrome-reading-list-api?style=social)](https://github.com/theluckystrike/chrome-reading-list-api)
-
-> Chrome Reading List API wrapper for managing saved articles.
-
-**chrome-reading-list-api** provides utilities to add, remove, and manage articles in Chrome's Reading List. Part of the Zovo Chrome extension utilities.
-
-Part of the [Zovo](https://zovo.one) developer tools family.
+A TypeScript wrapper for the Chrome Reading List API, available in Manifest V3 extensions.
 
 ## Overview
 
-chrome-reading-list-api provides utilities to add, remove, and manage articles in Chrome's Reading List.
+chrome-reading-list-api provides utilities to add, remove, and manage articles in Chrome's Reading List. The library offers a simple static class interface for performing common reading list operations.
 
 ## Features
 
-- ✅ **Add Articles** - Save articles to Reading List
-- ✅ **List Management** - Get, filter, and search items
-- ✅ **Update Items** - Modify titles and URLs
-- ✅ **Remove Items** - Delete articles from list
-- ✅ **TypeScript Support** - Full type definitions included
+- Add articles to the reading list
+- Remove articles from the reading list
+- Mark articles as read or unread
+- Query all, unread, or read articles
+- Add the current browser tab to the reading list
+- Get count statistics for the reading list
 
 ## Installation
 
@@ -35,113 +23,188 @@ npm install chrome-reading-list-api
 
 ## Usage
 
-### Add to Reading List
+### Add an Article
 
-```javascript
+```typescript
 import { ReadingList } from 'chrome-reading-list-api';
 
-await ReadingList.add({
-  title: 'Article Title',
-  url: 'https://example.com/article',
+await ReadingList.add('https://example.com/article', 'Article Title');
+```
+
+### Add an Article and Mark as Read
+
+```typescript
+await ReadingList.add('https://example.com/article', 'Article Title', true);
+```
+
+### Get All Articles
+
+```typescript
+const items = await ReadingList.getAll();
+console.log(`Total items: ${items.length}`);
+items.forEach(item => {
+  console.log(`${item.title} - ${item.url}`);
+  console.log(`Read: ${item.hasBeenRead}`);
 });
 ```
 
-### Get All Items
+### Get Unread Articles Only
 
-```javascript
-const items = await ReadingList.getAll();
-console.log(items.length);
-items.forEach(item => console.log(item.title));
+```typescript
+const unread = await ReadingList.getUnread();
+console.log(`Unread items: ${unread.length}`);
 ```
 
-### Remove Item
+### Mark an Article as Read
 
-```javascript
-await ReadingList.remove(itemId);
+```typescript
+await ReadingList.markRead('https://example.com/article');
 ```
 
-## API
+### Mark an Article as Unread
 
-### Methods
+```typescript
+await ReadingList.markUnread('https://example.com/article');
+```
 
-- `add(item)` - Add article to list
-- `getAll()` - Get all items
-- `getById(id)` - Get specific item
-- `remove(id)` - Remove item
-- `update(id, updates)` - Update item
+### Remove an Article
 
-### Item Properties
+```typescript
+await ReadingList.remove('https://example.com/article');
+```
 
-- `title` - Article title
-- `url` - Article URL
-- `dateAdded` - When added
-- `dateLastVisited` - Last viewed
+### Add Current Tab
 
-## Manifest
+```typescript
+// Adds the currently active tab to the reading list
+await ReadingList.addCurrentTab();
+```
+
+### Get Statistics
+
+```typescript
+const stats = await ReadingList.count();
+console.log(`Total: ${stats.total}, Unread: ${stats.unread}, Read: ${stats.read}`);
+```
+
+## API Reference
+
+### ReadingList
+
+Static class providing methods for reading list management.
+
+#### add
+
+```typescript
+static async add(url: string, title: string, hasBeenRead?: boolean): Promise<void>
+```
+
+Adds an entry to the reading list.
+
+#### remove
+
+```typescript
+static async remove(url: string): Promise<void>
+```
+
+Removes an entry from the reading list.
+
+#### markRead
+
+```typescript
+static async markRead(url: string): Promise<void>
+```
+
+Marks an entry as read.
+
+#### markUnread
+
+```typescript
+static async markUnread(url: string): Promise<void>
+```
+
+Marks an entry as unread.
+
+#### getAll
+
+```typescript
+static async getAll(): Promise<Array<{ url: string; title: string; hasBeenRead: boolean; creationTime: number }>>
+```
+
+Returns all reading list entries.
+
+#### getUnread
+
+```typescript
+static async getUnread(): Promise<Array<{ url: string; title: string }>>
+```
+
+Returns only unread entries.
+
+#### getRead
+
+```typescript
+static async getRead(): Promise<Array<{ url: string; title: string }>>
+```
+
+Returns only read entries.
+
+#### addCurrentTab
+
+```typescript
+static async addCurrentTab(): Promise<void>
+```
+
+Adds the currently active browser tab to the reading list.
+
+#### count
+
+```typescript
+static async count(): Promise<{ total: number; unread: number; read: number }>
+```
+
+Returns counts for total, unread, and read entries.
+
+## Manifest Configuration
+
+Add the readingList permission to your manifest.json:
 
 ```json
 {
-  "permissions": ["readingList"]
+  "permissions": [
+    "readingList"
+  ]
 }
 ```
 
-## Browser Support
+## Requirements
 
-- Chrome 120+
+- Chrome 120 or later
+- Manifest V3
 
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. **Fork** the repository
-2. **Create** a feature branch: `git checkout -b feature/reading-list-improvement`
-3. **Make** your changes
-4. **Test** your changes: `npm test`
-5. **Commit** your changes: `git commit -m 'Add new feature'`
-6. **Push** to the branch: `git push origin feature/reading-list-improvement`
-7. **Submit** a Pull Request
-
-### Development Setup
+## Development
 
 ```bash
-# Clone the repository
-git clone https://github.com/theluckystrike/chrome-reading-list-api.git
-cd chrome-reading-list-api
-
 # Install dependencies
 npm install
 
+# Build TypeScript
+npm run build
+
 # Run tests
 npm test
-
-# Build
-npm run build
 ```
 
-## Built by Zovo
+## Related
 
-Part of the [Zovo](https://zovo.one) developer tools family — privacy-first Chrome extensions built by developers, for developers.
-
-## See Also
-
-### Related Zovo Repositories
-
-- [zovo-extension-template](https://github.com/theluckystrike/zovo-extension-template) - Boilerplate for building privacy-first Chrome extensions
-- [zovo-types-webext](https://github.com/theluckystrike/zovo-types-webext) - Comprehensive TypeScript type definitions for browser extensions
-- [chrome-storage-plus](https://github.com/theluckystrike/chrome-storage-plus) - Type-safe storage wrapper
-
-### Zovo Chrome Extensions
-
-- [Zovo Tab Manager](https://chrome.google.com/webstore/detail/zovo-tab-manager) - Manage tabs efficiently
-- [Zovo Focus](https://chrome.google.com/webstore/detail/zovo-focus) - Block distractions
-- [Zovo Permissions Scanner](https://chrome.google.com/webstore/detail/zovo-permissions-scanner) - Check extension privacy grades
-
-Visit [zovo.one](https://zovo.one) for more information.
+- [zovo-extension-template](https://github.com/theluckystrike/zovo-extension-template) - Boilerplate for building Chrome extensions
+- [zovo-types-webext](https://github.com/theluckystrike/zovo-types-webext) - TypeScript type definitions for browser extensions
+- [chrome-storage-plus](https://github.com/theluckystrike/chrome-storage-plus) - Type-safe storage wrapper for Chrome extensions
 
 ## License
 
-MIT - [Zovo](https://zovo.one)
+MIT License
 
----
+## About
 
-*Built by developers, for developers. No compromises on privacy.*
+Part of the [zovo.one](https://zovo.one) developer tools family. Built by theluckystrike.
